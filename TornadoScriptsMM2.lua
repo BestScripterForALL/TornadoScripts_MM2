@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local plr     = Players.LocalPlayer
 local UIS     = game:GetService("UserInputService")
 local VIM     = game:GetService("VirtualInputManager")
-
+local grabBtn = mkBtn("AutoGrabGun [OFF]", 230)
 -------------------------------------------------
 -- GUI
 -------------------------------------------------
@@ -288,7 +288,7 @@ end
 
 task.spawn(function()
     while true do
-        task.wait(0.5) -- задержка 0.5 сек
+        task.wait(0.5)
         if auraOn then
             local target = nearestTarget()
             if target and target.Character and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
@@ -300,4 +300,60 @@ task.spawn(function()
             end
         end
     end
+end)
+---------GunEsp
+local gunESPAdornment = nil
+task.spawn(function()
+	while true do
+		task.wait(0.5)
+		if espOn then
+			local gun = workspace:FindFirstChild("GunDrop")
+			if gun and not gunESPAdornment then
+				gunESPAdornment = Instance.new("BoxHandleAdornment")
+				gunESPAdornment.Name = "GunESP"
+				gunESPAdornment.Adornee = gun
+				gunESPAdornment.Size = Vector3.new(2, 2, 1)
+				gunESPAdornment.Color3 = Color3.fromRGB(0, 200, 255)
+				gunESPAdornment.Transparency = 0.25
+				gunESPAdornment.AlwaysOnTop = true
+				gunESPAdornment.ZIndex = 5
+				gunESPAdornment.Parent = espFolder
+			elseif not gun and gunESPAdornment then
+				gunESPAdornment:Destroy()
+				gunESPAdornment = nil
+			elseif gunESPAdornment and gunESPAdornment.Adornee ~= gun then
+				gunESPAdornment:Destroy()
+				gunESPAdornment = nil
+			end
+		else
+			if gunESPAdornment then
+				gunESPAdornment:Destroy()
+				gunESPAdornment = nil
+			end
+		end
+	end
+end)
+-------------------------------------------------
+-- Auto Grab Gun
+-------------------------------------------------
+local grabOn = false
+grabBtn.MouseButton1Click:Connect(function()
+    grabOn = not grabOn
+    grabBtn.Text = grabOn and "AutoGrabGun [ON]" or "AutoGrabGun [OFF]"
+    grabBtn.BackgroundColor3 = grabOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if grabOn then
+            local gun = workspace:FindFirstChild("GunDrop")
+            if gun and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                plr.Character.HumanoidRootPart.CFrame = gun.CFrame + Vector3.new(0, 2, 0)
+            end
+        end
+    end
+end)
+    
+
 end)
