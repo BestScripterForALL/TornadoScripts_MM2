@@ -309,21 +309,17 @@ task.spawn(function()
 end)
 
 -- AutoGrabGun
+-- AutoGrabGun (форумный метод с моментальной реакцией)
 local grabOn = false
 grabBtn.MouseButton1Click:Connect(function()
-	grabOn = not grabOn
-	grabBtn.Text = grabOn and "AutoGrabGun [ON]" or "AutoGrabGun [OFF]"
-	grabBtn.BackgroundColor3 = grabOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+    grabOn = not grabOn
+    grabBtn.Text = grabOn and "AutoGrabGun [ON]" or "AutoGrabGun [OFF]"
+    grabBtn.BackgroundColor3 = grabOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
 end)
 
-task.spawn(function()
-	while true do
-		task.wait(0.5)
-		if grabOn and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			local gun = workspace:FindFirstChild("GunDrop")
-			if gun then
-				plr.Character.HumanoidRootPart.CFrame = gun.CFrame + Vector3.new(0,2,0)
-			end
-		end
-	end
+workspace.ChildAdded:Connect(function(child)
+    if grabOn and child.Name == "GunDrop" and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        wait(0.1)
+        plr.Character.HumanoidRootPart.CFrame = child.CFrame + Vector3.new(0,2,0)
+    end
 end)
