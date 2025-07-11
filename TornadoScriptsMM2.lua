@@ -100,35 +100,29 @@ infoLabel.TextScaled = true
 infoLabel.TextColor3 = Color3.new(1,1,1)
 infoLabel.TextWrapped = true
 
-local pageMain = Instance.new("ScrollingFrame", pages)
+local pageMain = Instance.new("Frame", pages)
 pageMain.Size = UDim2.new(1,0,1,0)
 pageMain.Position = UDim2.new(0,130,0,40)
 pageMain.BackgroundTransparency = 1
-pageMain.CanvasSize = UDim2.new(0,0,0,0)
-pageMain.ScrollBarThickness = 6
 pageMain.Visible = false
-pageMain.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
-local btnY = 10
-local function mkBtn(text)
+local function mkBtn(text, yPos)
 	local btn = Instance.new("TextButton", pageMain)
-	btn.Size = UDim2.new(0,150,0,50)
-	btn.Position = UDim2.new(0,20,0,btnY)
+	btn.Size = UDim2.new(0,120,0,40)
+	btn.Position = UDim2.new(0,20,0,yPos)
 	btn.Text = text
 	btn.Font = Enum.Font.GothamBold
 	btn.TextScaled = true
 	btn.BackgroundColor3 = Color3.fromRGB(100,30,30)
 	btn.TextColor3 = Color3.new(1,1,1)
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
-	btnY = btnY + 60
-	pageMain.CanvasSize = UDim2.new(0, 0, 0, btnY)
 	return btn
 end
 
-local autoBtn = mkBtn("AutoFarm [OFF]")
-local espBtn = mkBtn("ESP [OFF]")
-local kAuraBtn = mkBtn("KillAura [OFF]")
-local grabBtn = mkBtn("AutoGrabGun [OFF]")
+local autoBtn = mkBtn("AutoFarm [OFF]", 20)
+local espBtn = mkBtn("ESP [OFF]", 70)
+local kAuraBtn = mkBtn("KillAura [OFF]", 120)
+local grabBtn = mkBtn("AutoGrabGun [OFF]", 170)
 
 openBtn.MouseButton1Click:Connect(function()
 	menu.Visible = not menu.Visible
@@ -172,7 +166,6 @@ autoBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ESP
-
 local espOn = false
 local espFolder = Instance.new("Folder", game.CoreGui)
 espFolder.Name = "ESPFolder_Tornado"
@@ -277,62 +270,60 @@ task.spawn(function()
 end)
 
 -- KillAura
-
 local auraOn = false
 kAuraBtn.MouseButton1Click:Connect(function()
-    auraOn = not auraOn
-    kAuraBtn.Text = auraOn and "KillAura [ON]" or "KillAura [OFF]"
-    kAuraBtn.BackgroundColor3 = auraOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+	auraOn = not auraOn
+	kAuraBtn.Text = auraOn and "KillAura [ON]" or "KillAura [OFF]"
+	kAuraBtn.BackgroundColor3 = auraOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
 end)
 
 local function nearestTarget()
-    local myHRP = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
-    if not myHRP then return nil end
-    local best, dist = nil, 100
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local d = (p.Character.HumanoidRootPart.Position - myHRP.Position).Magnitude
-            if d < 100 and d < dist then
-                dist, best = d, p
-            end
-        end
-    end
-    return best
+	local myHRP = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+	if not myHRP then return nil end
+	local best, dist = nil, 100
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+			local d = (p.Character.HumanoidRootPart.Position - myHRP.Position).Magnitude
+			if d < 100 and d < dist then
+				dist, best = d, p
+			end
+		end
+	end
+	return best
 end
 
 task.spawn(function()
-    while true do
-        task.wait(0.5)
-        if auraOn then
-            local target = nearestTarget()
-            if target and target.Character and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                local tHRP = target.Character.HumanoidRootPart
-                local behind = tHRP.CFrame * CFrame.new(0, 2, 2)
-                plr.Character.HumanoidRootPart.CFrame = behind
-                VIM:SendMouseButtonEvent(0, 0, 0, true,  game, 0)
-                VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-            end
-        end
-    end
+	while true do
+		task.wait(0.5)
+		if auraOn then
+			local target = nearestTarget()
+			if target and target.Character and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				local tHRP = target.Character.HumanoidRootPart
+				local behind = tHRP.CFrame * CFrame.new(0, 2, 2)
+				plr.Character.HumanoidRootPart.CFrame = behind
+				VIM:SendMouseButtonEvent(0, 0, 0, true,  game, 0)
+				VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+			end
+		end
+	end
 end)
 
 -- AutoGrabGun
-
 local grabOn = false
 grabBtn.MouseButton1Click:Connect(function()
-    grabOn = not grabOn
-    grabBtn.Text = grabOn and "AutoGrabGun [ON]" or "AutoGrabGun [OFF]"
-    grabBtn.BackgroundColor3 = grabOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+	grabOn = not grabOn
+	grabBtn.Text = grabOn and "AutoGrabGun [ON]" or "AutoGrabGun [OFF]"
+	grabBtn.BackgroundColor3 = grabOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
 end)
 
 task.spawn(function()
-    while true do
-        task.wait(0.5)
-        if grabOn and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            local gun = workspace:FindFirstChild("GunDrop")
-            if gun then
-                plr.Character.HumanoidRootPart.CFrame = gun.CFrame + Vector3.new(0,2,0)
-            end
-        end
-    end
+	while true do
+		task.wait(0.5)
+		if grabOn and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local gun = workspace:FindFirstChild("GunDrop")
+			if gun then
+				plr.Character.HumanoidRootPart.CFrame = gun.CFrame + Vector3.new(0,2,0)
+			end
+		end
+	end
 end)
