@@ -100,28 +100,35 @@ infoLabel.TextScaled = true
 infoLabel.TextColor3 = Color3.new(1,1,1)
 infoLabel.TextWrapped = true
 
-local pageMain = Instance.new("Frame", pages)
+local pageMain = Instance.new("ScrollingFrame", pages)
 pageMain.Size = UDim2.new(1,0,1,0)
-pageMain.Visible = false
+pageMain.Position = UDim2.new(0,130,0,40)
 pageMain.BackgroundTransparency = 1
+pageMain.CanvasSize = UDim2.new(0,0,0,0)
+pageMain.ScrollBarThickness = 6
+pageMain.Visible = false
+pageMain.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
-local function mkBtn(text, posY)
+local btnY = 10
+local function mkBtn(text)
 	local btn = Instance.new("TextButton", pageMain)
 	btn.Size = UDim2.new(0,150,0,50)
-	btn.Position = UDim2.new(0,20,0,posY)
+	btn.Position = UDim2.new(0,20,0,btnY)
 	btn.Text = text
 	btn.Font = Enum.Font.GothamBold
 	btn.TextScaled = true
 	btn.BackgroundColor3 = Color3.fromRGB(100,30,30)
 	btn.TextColor3 = Color3.new(1,1,1)
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
+	btnY = btnY + 60
+	pageMain.CanvasSize = UDim2.new(0, 0, 0, btnY)
 	return btn
 end
 
-local autoBtn = mkBtn("AutoFarm [OFF]", 20)
-local espBtn = mkBtn("ESP [OFF]", 90)
-local kAuraBtn = mkBtn("KillAura [OFF]", 160)
-local grabBtn = mkBtn("AutoGrabGun [OFF]", 230)
+local autoBtn = mkBtn("AutoFarm [OFF]")
+local espBtn = mkBtn("ESP [OFF]")
+local kAuraBtn = mkBtn("KillAura [OFF]")
+local grabBtn = mkBtn("AutoGrabGun [OFF]")
 
 openBtn.MouseButton1Click:Connect(function()
 	menu.Visible = not menu.Visible
