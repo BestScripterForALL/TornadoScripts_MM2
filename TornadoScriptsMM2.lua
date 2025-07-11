@@ -160,59 +160,105 @@ end)
 -------------------------------------------------
 -- ESP (из предыдущей версии, сокращён)
 -------------------------------------------------
-local espOn=false
-local espFolder=Instance.new("Folder",game.CoreGui) espFolder.Name="ESPFolder_Tornado"
-local itemOwners={Gun=nil,Knife=nil}; local playerColors={}
+local espOn = false
+local espFolder = Instance.new("Folder", game.CoreGui)
+espFolder.Name = "ESPFolder_Tornado"
 
-local function hasItem(p,n)
-	local b=p:FindFirstChild("Backpack") if not b then return false end
-	for _,i in ipairs(b:GetChildren()) do if i.Name:lower()==n:lower() then return true end end
+local itemOwners = { Gun = nil, Knife = nil }
+local playerColors = {}
+
+local function clearESP()
+	for _, v in ipairs(espFolder:GetChildren()) do
+		v:Destroy()
+	end
+	playerColors = {}
+end
+
+local function hasItem(player, itemName)
+	local backpack = player:FindFirstChild("Backpack")
+	if backpack then
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item.Name:lower() == itemName:lower() then
+				return true
+			end
+		end
+	end
 	return false
 end
 
-local function updOwners()
-	local k,g=nil,nil
-	for _,p in ipairs(Players:GetPlayers()) do
-		if not k and hasItem(p,"Knife") then k=p end
-		if not g and (hasItem(p,"Gun") or hasItem(p,"Revolver")) then g=p end
-		if k and g then break end
+local function updateItemOwners()
+	local newKnifeOwner, newGunOwner
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		if not newKnifeOwner and hasItem(player, "Knife") then
+			newKnifeOwner = player
+		end
+		if not newGunOwner and (hasItem(player, "Gun") or hasItem(player, "Revolver")) then
+			newGunOwner = player
+		end
 	end
-	itemOwners.Knife,itemOwners.Gun=k,g
+
+	if newKnifeOwner and newKnifeOwner ~= itemOwners.Knife then
+		if itemOwners.Knife and playerColors[itemOwners.Knife] then
+			playerColors[itemOwners.Knife] = Color3.fromRGB(0, 255, 0)
+		end
+		itemOwners.Knife = newKnifeOwner
+		playerColors[newKnifeOwner] = Color3.fromRGB(255, 0, 0)
+	end
+
+	if newGunOwner and newGunOwner ~= itemOwners.Gun then
+		if itemOwners.Gun and playerColors[itemOwners.Gun] then
+			playerColors[itemOwners.Gun] = Color3.fromRGB(0, 255, 0)
+		end
+		itemOwners.Gun = newGunOwner
+		playerColors[newGunOwner] = Color3.fromRGB(0, 100, 255)
+	end
 end
 
-local function setColors()
-	for _,p in ipairs(Players:GetPlayers()) do
-		if p==itemOwners.Knife then playerColors[p]=Color3.fromRGB(255,0,0)
-		elseif p==itemOwners.Gun then playerColors[p]=Color3.fromRGB(0,100,255)
-		else playerColors[p]=Color3.fromRGB(0,255,0) end
+local function assignColorsIfMissing()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= plr and not playerColors[player] then
+			playerColors[player] = Color3.fromRGB(0, 255, 0)
+		end
 	end
 end
 
-local function drawESP()
-	for _,p in ipairs(Players:GetPlayers()) do
-		if p~=plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-			local b=espFolder:FindFirstChild(p.Name)
-			if not b then
-				b=Instance.new("BoxHandleAdornment")
-				b.Name=p.Name b.Adornee=p.Character.HumanoidRootPart
-				b.Size=Vector3.new(4,6,2) b.Transparency=0.4 b.AlwaysOnTop=true b.ZIndex=5 b.Parent=espFolder
+local function updateESP()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local adorn = espFolder:FindFirstChild(player.Name)
+			if not adorn then
+				adorn = Instance.new("BoxHandleAdornment")
+				adorn.Name = player.Name
+				adorn.Adornee = player.Character.HumanoidRootPart
+				adorn.Size = Vector3.new(4,6,2)
+				adorn.Transparency = 0.4
+				adorn.AlwaysOnTop = true
+				adorn.ZIndex = 5
+				adorn.Parent = espFolder
 			end
-			b.Color3=playerColors[p] or Color3.fromRGB(0,255,0)
+			adorn.Color3 = playerColors[player] or Color3.fromRGB(0, 255, 0)
 		end
 	end
 end
 
 espBtn.MouseButton1Click:Connect(function()
-	espOn=not espOn
-	espBtn.Text=espOn and "ESP [ON]" or "ESP [OFF]"
-	espBtn.BackgroundColor3=espOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
-	if not espOn then espFolder:ClearAllChildren() end
+	espOn = not espOn
+	espBtn.Text = espOn and "ESP [ON]" or "ESP [OFF]"
+	espBtn.BackgroundColor3 = espOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+	if not espOn then
+		clearESP()
+	end
 end)
 
 task.spawn(function()
 	while true do
 		task.wait(1)
-		if espOn then updOwners(); setColors(); drawESP() end
+		if espOn then
+			updateItemOwners()
+			assignColorsIfMissing()
+			updateESP()
+		end
 	end
 end)
 -------------------------------------------------
