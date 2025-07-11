@@ -1,11 +1,9 @@
 local Players = game:GetService("Players")
-local plr     = Players.LocalPlayer
-local UIS     = game:GetService("UserInputService")
-local VIM     = game:GetService("VirtualInputManager")
-local grabBtn = mkBtn("AutoGrabGun [OFF]", 230)
--------------------------------------------------
--- GUI
--------------------------------------------------
+local plr = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
+local VIM = game:GetService("VirtualInputManager")
+
 local gui = Instance.new("ScreenGui", plr:WaitForChild("PlayerGui"))
 gui.ResetOnSpawn = false
 
@@ -19,29 +17,31 @@ openBtn.BackgroundColor3 = Color3.fromRGB(20,20,20)
 openBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
 
--------------------------------------------------
--- Drag logic
--------------------------------------------------
 local dragging, dragInput, dragStart, startPos
-openBtn.InputBegan:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging, dragStart, startPos = true, i.Position, openBtn.Position
-		i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then dragging = false end end)
+openBtn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = openBtn.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
 	end
 end)
-openBtn.InputChanged:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseMovement then dragInput = i end
+openBtn.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
 end)
-UIS.InputChanged:Connect(function(i)
-	if i == dragInput and dragging then
-		local d = i.Position - dragStart
-		openBtn.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		openBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
 
--------------------------------------------------
--- Menu
--------------------------------------------------
 local menu = Instance.new("Frame", gui)
 menu.Size = UDim2.fromOffset(450,300)
 menu.Position = UDim2.new(0.5,-225,0.5,-150)
@@ -50,16 +50,17 @@ menu.Visible = false
 Instance.new("UICorner", menu).CornerRadius = UDim.new(0,10)
 
 local title = Instance.new("TextLabel", menu)
-title.Size  = UDim2.new(1,0,0,40)
-title.Text  = "Tornado Scripts"
-title.Font  = Enum.Font.GothamBold
-title.TextScaled = true
+title.Size = UDim2.new(1,0,0,40)
+title.Position = UDim2.new(0,0,0,0)
 title.BackgroundColor3 = Color3.fromRGB(35,35,35)
+title.Text = "Tornado Scripts"
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
 title.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", title).CornerRadius = UDim.new(0,8)
 
 local tabs = Instance.new("Frame", menu)
-tabs.Size = UDim2.new(0,130,1,-40)
+tabs.Size = UDim2.new(0,130,1, -40)
 tabs.Position = UDim2.new(0,0,0,40)
 tabs.BackgroundColor3 = Color3.fromRGB(45,45,45)
 
@@ -85,81 +86,86 @@ pages.Size = UDim2.new(1,-130,1,-40)
 pages.Position = UDim2.new(0,130,0,40)
 pages.BackgroundTransparency = 1
 
--------------------------------------------------
--- Info page
--------------------------------------------------
 local pageInfo = Instance.new("Frame", pages)
 pageInfo.Size = UDim2.new(1,0,1,0)
+pageInfo.BackgroundTransparency = 1
 
 local infoLabel = Instance.new("TextLabel", pageInfo)
 infoLabel.Size = UDim2.new(1,-20,0,200)
 infoLabel.Position = UDim2.new(0,10,0,10)
 infoLabel.BackgroundTransparency = 1
-infoLabel.Text = "Создатель: BestScripterForALL\nИгрок: "..plr.Name
+infoLabel.Text = "Создатель: BestScripterForALL\nИгрок: " .. plr.Name
 infoLabel.Font = Enum.Font.Gotham
 infoLabel.TextScaled = true
 infoLabel.TextColor3 = Color3.new(1,1,1)
 infoLabel.TextWrapped = true
 
--------------------------------------------------
--- Main page & buttons
--------------------------------------------------
 local pageMain = Instance.new("Frame", pages)
 pageMain.Size = UDim2.new(1,0,1,0)
 pageMain.Visible = false
 pageMain.BackgroundTransparency = 1
 
-local function mkBtn(text,y)
-	local b = Instance.new("TextButton", pageMain)
-	b.Size = UDim2.new(0,150,0,50)
-	b.Position = UDim2.new(0,20,0,y)
-	b.Text = text
-	b.Font = Enum.Font.GothamBold
-	b.TextScaled = true
-	b.BackgroundColor3 = Color3.fromRGB(100,30,30)
-	b.TextColor3 = Color3.new(1,1,1)
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
-	return b
+local function mkBtn(text, posY)
+	local btn = Instance.new("TextButton", pageMain)
+	btn.Size = UDim2.new(0,150,0,50)
+	btn.Position = UDim2.new(0,20,0,posY)
+	btn.Text = text
+	btn.Font = Enum.Font.GothamBold
+	btn.TextScaled = true
+	btn.BackgroundColor3 = Color3.fromRGB(100,30,30)
+	btn.TextColor3 = Color3.new(1,1,1)
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
+	return btn
 end
 
-local autoBtn   = mkBtn("AutoFarm [OFF]",20)
-local espBtn    = mkBtn("ESP [OFF]",90)
-local kAuraBtn  = mkBtn("KillAura [OFF]",160)
+local autoBtn = mkBtn("AutoFarm [OFF]", 20)
+local espBtn = mkBtn("ESP [OFF]", 90)
+local kAuraBtn = mkBtn("KillAura [OFF]", 160)
+local grabBtn = mkBtn("AutoGrabGun [OFF]", 230)
 
-openBtn.MouseButton1Click:Connect(function() menu.Visible = not menu.Visible end)
-btnInfo.MouseButton1Click:Connect(function() pageInfo.Visible,pageMain.Visible=true,false end)
-btnMain.MouseButton1Click:Connect(function() pageInfo.Visible,pageMain.Visible=false,true end)
+openBtn.MouseButton1Click:Connect(function()
+	menu.Visible = not menu.Visible
+end)
 
--------------------------------------------------
--- AutoFarm (старый)
--------------------------------------------------
-local running=false
+btnInfo.MouseButton1Click:Connect(function()
+	pageInfo.Visible = true
+	pageMain.Visible = false
+end)
+btnMain.MouseButton1Click:Connect(function()
+	pageInfo.Visible = false
+	pageMain.Visible = true
+end)
+
+-- AutoFarm
+local running = false
 autoBtn.MouseButton1Click:Connect(function()
-	running=not running
+	running = not running
 	autoBtn.Text = running and "AutoFarm [ON]" or "AutoFarm [OFF]"
 	autoBtn.BackgroundColor3 = running and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
 	task.spawn(function()
 		while running do
-			local target
-			for _,map in ipairs(workspace:GetChildren()) do
+			local targetCoin
+			for _, map in ipairs(workspace:GetChildren()) do
 				if map:IsA("Model") and map:FindFirstChild("CoinContainer") then
-					for _,c in ipairs(map.CoinContainer:GetChildren()) do
-						if c:IsA("BasePart") then target=c break end
+					for _, coin in ipairs(map.CoinContainer:GetChildren()) do
+						if coin:IsA("BasePart") then
+							targetCoin = coin
+							break
+						end
 					end
 				end
-				if target then break end
+				if targetCoin then break end
 			end
-			if target and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-				plr.Character.HumanoidRootPart.CFrame = target.CFrame + Vector3.new(0,3,0)
+			if targetCoin and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				plr.Character.HumanoidRootPart.CFrame = targetCoin.CFrame + Vector3.new(0,3,0)
 			end
 			task.wait(0.5)
 		end
 	end)
 end)
 
--------------------------------------------------
--- ESP (из предыдущей версии, сокращён)
--------------------------------------------------
+-- ESP
+
 local espOn = false
 local espFolder = Instance.new("Folder", game.CoreGui)
 espFolder.Name = "ESPFolder_Tornado"
@@ -172,6 +178,7 @@ local function clearESP()
 		v:Destroy()
 	end
 	playerColors = {}
+	itemOwners = { Gun = nil, Knife = nil }
 end
 
 local function hasItem(player, itemName)
@@ -261,9 +268,9 @@ task.spawn(function()
 		end
 	end
 end)
--------------------------------------------------
--- KillAura (обновлённый)
--------------------------------------------------
+
+-- KillAura
+
 local auraOn = false
 kAuraBtn.MouseButton1Click:Connect(function()
     auraOn = not auraOn
@@ -293,7 +300,7 @@ task.spawn(function()
             local target = nearestTarget()
             if target and target.Character and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
                 local tHRP = target.Character.HumanoidRootPart
-                local behind = tHRP.CFrame * CFrame.new(0, 2, 2) -- за спиной
+                local behind = tHRP.CFrame * CFrame.new(0, 2, 2)
                 plr.Character.HumanoidRootPart.CFrame = behind
                 VIM:SendMouseButtonEvent(0, 0, 0, true,  game, 0)
                 VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
@@ -301,41 +308,9 @@ task.spawn(function()
         end
     end
 end)
----------GunEsp
-local gunESPAdornment = nil
-task.spawn(function()
-	while true do
-		task.wait(0.5)
-		if espOn then
-			local gun = workspace:FindFirstChild("GunDrop")
-			if gun and not gunESPAdornment then
-				gunESPAdornment = Instance.new("BoxHandleAdornment")
-				gunESPAdornment.Name = "GunESP"
-				gunESPAdornment.Adornee = gun
-				gunESPAdornment.Size = Vector3.new(2, 2, 1)
-				gunESPAdornment.Color3 = Color3.fromRGB(0, 200, 255)
-				gunESPAdornment.Transparency = 0.25
-				gunESPAdornment.AlwaysOnTop = true
-				gunESPAdornment.ZIndex = 5
-				gunESPAdornment.Parent = espFolder
-			elseif not gun and gunESPAdornment then
-				gunESPAdornment:Destroy()
-				gunESPAdornment = nil
-			elseif gunESPAdornment and gunESPAdornment.Adornee ~= gun then
-				gunESPAdornment:Destroy()
-				gunESPAdornment = nil
-			end
-		else
-			if gunESPAdornment then
-				gunESPAdornment:Destroy()
-				gunESPAdornment = nil
-			end
-		end
-	end
-end)
--------------------------------------------------
--- Auto Grab Gun
--------------------------------------------------
+
+-- AutoGrabGun
+
 local grabOn = false
 grabBtn.MouseButton1Click:Connect(function()
     grabOn = not grabOn
@@ -346,14 +321,11 @@ end)
 task.spawn(function()
     while true do
         task.wait(0.5)
-        if grabOn then
+        if grabOn and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
             local gun = workspace:FindFirstChild("GunDrop")
-            if gun and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                plr.Character.HumanoidRootPart.CFrame = gun.CFrame + Vector3.new(0, 2, 0)
+            if gun then
+                plr.Character.HumanoidRootPart.CFrame = gun.CFrame + Vector3.new(0,2,0)
             end
         end
     end
-end)
-    
-
 end)
