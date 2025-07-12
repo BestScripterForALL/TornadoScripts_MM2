@@ -1,47 +1,36 @@
 local Players = game:GetService("Players")
-local plr     = Players.LocalPlayer
 local UIS     = game:GetService("UserInputService")
 local VIM     = game:GetService("VirtualInputManager")
+local plr     = Players.LocalPlayer
 
--------------------------------------------------
--- GUI
--------------------------------------------------
+-- GUI ----------------------------------------------------------
 local gui = Instance.new("ScreenGui", plr:WaitForChild("PlayerGui"))
 gui.ResetOnSpawn = false
 
-local openBtn = Instance.new("TextButton", gui)
-openBtn.Size = UDim2.fromOffset(60,60)
-openBtn.Position = UDim2.new(1,-70,0.5,-30)
-openBtn.Text = "T"
-openBtn.Font = Enum.Font.GothamBold
-openBtn.TextScaled = true
-openBtn.BackgroundColor3 = Color3.fromRGB(20,20,20)
-openBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
+local open = Instance.new("TextButton", gui)
+open.Size = UDim2.fromOffset(60,60)
+open.Position = UDim2.new(1,-70,0.5,-30)
+open.Text = "T"
+open.Font = Enum.Font.GothamBold
+open.TextScaled = true
+open.BackgroundColor3 = Color3.fromRGB(20,20,20)
+open.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", open).CornerRadius = UDim.new(1,0)
 
--------------------------------------------------
--- Drag logic
--------------------------------------------------
-local dragging, dragInput, dragStart, startPos
-openBtn.InputBegan:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging, dragStart, startPos = true, i.Position, openBtn.Position
-		i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then dragging = false end end)
+local drag,di,ds,sp
+open.InputBegan:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+		drag,ds,sp=true,i.Position,open.Position
+		i.Changed:Connect(function() if i.UserInputState==Enum.UserInputState.End then drag=false end end)
 	end
 end)
-openBtn.InputChanged:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseMovement then dragInput = i end
-end)
+open.InputChanged:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch then di=i end end)
 UIS.InputChanged:Connect(function(i)
-	if i == dragInput and dragging then
-		local d = i.Position - dragStart
-		openBtn.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
+	if i==di and drag then
+		open.Position=UDim2.new(sp.X.Scale,sp.X.Offset+i.Position.X-ds.X,sp.Y.Scale,sp.Y.Offset+i.Position.Y-ds.Y)
 	end
 end)
 
--------------------------------------------------
--- Menu
--------------------------------------------------
 local menu = Instance.new("Frame", gui)
 menu.Size = UDim2.fromOffset(450,300)
 menu.Position = UDim2.new(0.5,-225,0.5,-150)
@@ -50,9 +39,9 @@ menu.Visible = false
 Instance.new("UICorner", menu).CornerRadius = UDim.new(0,10)
 
 local title = Instance.new("TextLabel", menu)
-title.Size  = UDim2.new(1,0,0,40)
-title.Text  = "Tornado Scripts"
-title.Font  = Enum.Font.GothamBold
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "Tornado Scripts"
+title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.BackgroundColor3 = Color3.fromRGB(35,35,35)
 title.TextColor3 = Color3.new(1,1,1)
@@ -63,54 +52,51 @@ tabs.Size = UDim2.new(0,130,1,-40)
 tabs.Position = UDim2.new(0,0,0,40)
 tabs.BackgroundColor3 = Color3.fromRGB(45,45,45)
 
-local btnInfo = Instance.new("TextButton", tabs)
-btnInfo.Size = UDim2.new(1,0,0,40)
-btnInfo.Text = "Info"
-btnInfo.Font = Enum.Font.GothamBold
-btnInfo.TextScaled = true
-btnInfo.BackgroundColor3 = Color3.fromRGB(65,65,65)
-btnInfo.TextColor3 = Color3.new(1,1,1)
-
-local btnMain = Instance.new("TextButton", tabs)
-btnMain.Size = UDim2.new(1,0,0,40)
-btnMain.Position = UDim2.new(0,0,0,45)
-btnMain.Text = "Main"
-btnMain.Font = Enum.Font.GothamBold
-btnMain.TextScaled = true
-btnMain.BackgroundColor3 = Color3.fromRGB(65,65,65)
-btnMain.TextColor3 = Color3.new(1,1,1)
+local function tab(name, y)
+	local b = Instance.new("TextButton", tabs)
+	b.Size = UDim2.new(1,0,0,40)
+	b.Position = UDim2.new(0,0,0,y)
+	b.Text = name
+	b.Font = Enum.Font.GothamBold
+	b.TextScaled = true
+	b.BackgroundColor3 = Color3.fromRGB(65,65,65)
+	b.TextColor3 = Color3.new(1,1,1)
+	return b
+end
+local bInfo = tab("Info",0)
+local bMain = tab("Main",45)
+local bFun  = tab("Fun" ,90)
 
 local pages = Instance.new("Frame", menu)
 pages.Size = UDim2.new(1,-130,1,-40)
 pages.Position = UDim2.new(0,130,0,40)
 pages.BackgroundTransparency = 1
 
--------------------------------------------------
--- Info page
--------------------------------------------------
-local pageInfo = Instance.new("Frame", pages)
-pageInfo.Size = UDim2.new(1,0,1,0)
+local pInfo = Instance.new("Frame", pages)
+pInfo.Size = UDim2.new(1,0,1,0)
 
-local infoLabel = Instance.new("TextLabel", pageInfo)
-infoLabel.Size = UDim2.new(1,-20,0,200)
-infoLabel.Position = UDim2.new(0,10,0,10)
-infoLabel.BackgroundTransparency = 1
-infoLabel.Text = "Создатель: BestScripterForALL\nИгрок: "..plr.Name
-infoLabel.Font = Enum.Font.Gotham
-infoLabel.TextScaled = true
-infoLabel.TextColor3 = Color3.new(1,1,1)
-infoLabel.TextWrapped = true
+local pMain = Instance.new("Frame", pages)
+pMain.Size = UDim2.new(1,0,1,0)
+pMain.Visible = false
+pMain.BackgroundTransparency = 1
 
--------------------------------------------------
--- Main page & buttons
--------------------------------------------------
-local pageMain = Instance.new("Frame", pages)
-pageMain.Size = UDim2.new(1,0,1,0)
-pageMain.Visible = false
-pageMain.BackgroundTransparency = 1
+local pFun = Instance.new("Frame", pages)
+pFun.Size = UDim2.new(1,0,1,0)
+pFun.Visible = false
+pFun.BackgroundTransparency = 1
 
-local function mkBtn(text,y)
-	local b = Instance.new("TextButton", pageMain)
+local info = Instance.new("TextLabel", pInfo)
+info.Size = UDim2.new(1,-20,0,200)
+info.Position = UDim2.new(0,10,0,10)
+info.BackgroundTransparency = 1
+info.Text = "Создатель: BestScripterForALL\nИгрок: "..plr.Name
+info.Font = Enum.Font.Gotham
+info.TextScaled = true
+info.TextColor3 = Color3.new(1,1,1)
+info.TextWrapped = true
+
+local function mk(parent,text,y)
+	local b = Instance.new("TextButton", parent)
 	b.Size = UDim2.new(0,150,0,50)
 	b.Position = UDim2.new(0,20,0,y)
 	b.Text = text
@@ -122,170 +108,185 @@ local function mkBtn(text,y)
 	return b
 end
 
-local autoBtn   = mkBtn("AutoFarm [OFF]",20)
-local espBtn    = mkBtn("ESP [OFF]",90)
-local kAuraBtn  = mkBtn("KillAura [OFF]",160)
+local btnAF = mk(pMain,"AutoFarm [OFF]",20)
+local btnESP= mk(pMain,"ESP [OFF]"     ,90)
+local btnKA = mk(pMain,"KillAura [OFF]",160)
+local btnSJ = mk(pFun ,"Spam Jump [OFF]",20)
 
-openBtn.MouseButton1Click:Connect(function() menu.Visible = not menu.Visible end)
-btnInfo.MouseButton1Click:Connect(function() pageInfo.Visible,pageMain.Visible=true,false end)
-btnMain.MouseButton1Click:Connect(function() pageInfo.Visible,pageMain.Visible=false,true end)
+open.MouseButton1Click:Connect(function() menu.Visible = not menu.Visible end)
+bInfo.MouseButton1Click:Connect(function() pInfo.Visible=true  pMain.Visible=false pFun.Visible=false end)
+bMain.MouseButton1Click:Connect(function() pInfo.Visible=false pMain.Visible=true  pFun.Visible=false end)
+bFun.MouseButton1Click:Connect(function()  pInfo.Visible=false pMain.Visible=false pFun.Visible=true  end)
 
--------------------------------------------------
--- AutoFarm
--------------------------------------------------
-local running=false
-autoBtn.MouseButton1Click:Connect(function()
-	running=not running
-	autoBtn.Text = running and "AutoFarm [ON]" or "AutoFarm [OFF]"
-	autoBtn.BackgroundColor3 = running and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
-	task.spawn(function()
-		while running do
-			local target
-			for _,map in ipairs(workspace:GetChildren()) do
-				if map:IsA("Model") and map:FindFirstChild("CoinContainer") then
-					for _,c in ipairs(map.CoinContainer:GetChildren()) do
-						if c:IsA("BasePart") then target=c break end
-					end
-				end
-				if target then break end
-			end
-			if target and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-				plr.Character.HumanoidRootPart.CFrame = target.CFrame + Vector3.new(0,3,0)
-			end
-			task.wait(0.5)
-		end
-	end)
+----------------------------------------------------------------
+-- AutoFarm (телепорт к ближайшей монете)
+----------------------------------------------------------------
+local afOn=false
+btnAF.MouseButton1Click:Connect(function()
+	afOn=not afOn
+	btnAF.Text = afOn and "AutoFarm [ON]" or "AutoFarm [OFF]"
+	btnAF.BackgroundColor3 = afOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
 end)
 
--------------------------------------------------
--- НОВЫЙ ESP
--------------------------------------------------
-local espOn = false
-local espFolder = Instance.new("Folder", game.CoreGui)
-espFolder.Name = "ESPFolder_Tornado"
-
-local itemOwners = { Gun = nil, Knife = nil }
-local playerColors = {}
-
-local function clearESP()
-	for _, v in ipairs(espFolder:GetChildren()) do v:Destroy() end
-	playerColors = {}
-end
-
-local function hasItem(player, itemName)
-	local bp = player:FindFirstChild("Backpack")
-	if bp then
-		for _, it in ipairs(bp:GetChildren()) do
-			if it.Name:lower() == itemName:lower() then return true end
-		end
-	end
-	return false
-end
-
-local function updateItemOwners()
-	local newKnife, newGun
-	for _, p in ipairs(Players:GetPlayers()) do
-		if not newKnife and hasItem(p,"Knife") then newKnife=p end
-		if not newGun and (hasItem(p,"Gun") or hasItem(p,"Revolver")) then newGun=p end
-	end
-	if newKnife and newKnife ~= itemOwners.Knife then
-		if itemOwners.Knife then playerColors[itemOwners.Knife]=Color3.fromRGB(0,255,0) end
-		itemOwners.Knife = newKnife
-		playerColors[newKnife] = Color3.fromRGB(255,0,0)
-	end
-	if newGun and newGun ~= itemOwners.Gun then
-		if itemOwners.Gun then playerColors[itemOwners.Gun]=Color3.fromRGB(0,255,0) end
-		itemOwners.Gun = newGun
-		playerColors[newGun] = Color3.fromRGB(0,100,255)
-	end
-end
-
-local function assignColorsIfMissing()
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p~=plr and not playerColors[p] then playerColors[p]=Color3.fromRGB(0,255,0) end
-	end
-end
-
-local function updateESP()
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p~=plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-			local box = espFolder:FindFirstChild(p.Name)
-			if not box then
-				box = Instance.new("BoxHandleAdornment")
-				box.Name = p.Name
-				box.Adornee = p.Character.HumanoidRootPart
-				box.Size = Vector3.new(4,6,2)
-				box.Transparency = 0.4
-				box.AlwaysOnTop = true
-				box.ZIndex = 5
-				box.Parent = espFolder
+local function nearestCoin()
+	local char=plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+	if not char then return nil end
+	local best,dist=nil,9e9
+	for _,m in ipairs(workspace:GetChildren()) do
+		local cc=m:FindFirstChild("CoinContainer")
+		if cc then
+			for _,c in ipairs(cc:GetChildren()) do
+				if c:IsA("BasePart") then
+					local d=(c.Position-char.Position).Magnitude
+					if d<dist then dist,best=d,c end
+				end
 			end
-			box.Color3 = playerColors[p] or Color3.fromRGB(0,255,0)
+		end
+	end
+	return best
+end
+
+task.spawn(function()
+	while true do
+		task.wait(0.25)
+		if afOn then
+			local coin=nearestCoin()
+			if coin and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				plr.Character.HumanoidRootPart.CFrame=coin.CFrame+Vector3.new(0,3,0)
+			end
+		end
+	end
+end)
+
+----------------------------------------------------------------
+-- ESP
+----------------------------------------------------------------
+local espOn=false
+local espF=Instance.new("Folder",game.CoreGui) espF.Name="ESPTornado"
+local owners={Gun=nil,Knife=nil} local col={}
+local function clr() for _,v in ipairs(espF:GetChildren()) do v:Destroy() end col={} end
+local function has(p,it) local b=p:FindFirstChild("Backpack") if not b then return false end for _,o in ipairs(b:GetChildren()) do if o.Name:lower()==it then return true end end return false end
+local function upd()
+	local k,g=nil,nil
+	for _,p in ipairs(Players:GetPlayers()) do
+		if not k and has(p,"knife") then k=p end
+		if not g and (has(p,"gun") or has(p,"revolver")) then g=p end
+	end
+	if k and k~=owners.Knife then if owners.Knife then col[owners.Knife]=Color3.fromRGB(0,255,0) end owners.Knife=k col[k]=Color3.fromRGB(255,0,0) end
+	if g and g~=owners.Gun   then if owners.Gun   then col[owners.Gun]  =Color3.fromRGB(0,255,0) end owners.Gun  =g col[g]=Color3.fromRGB(0,100,255) end
+	for _,p in ipairs(Players:GetPlayers()) do if p~=plr and not col[p] then col[p]=Color3.fromRGB(0,255,0) end end
+end
+local function draw()
+	for _,p in ipairs(Players:GetPlayers()) do
+		if p~=plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+			local b=espF:FindFirstChild(p.Name)
+			if not b then b=Instance.new("BoxHandleAdornment",espF) b.Name=p.Name b.Adornee=p.Character.HumanoidRootPart b.Size=Vector3.new(4,6,2) b.Transparency=0.4 b.AlwaysOnTop=true b.ZIndex=5 end
+			b.Color3=col[p]
 		end
 	end
 end
+btnESP.MouseButton1Click:Connect(function()
+	espOn=not espOn
+	btnESP.Text=espOn and "ESP [ON]" or "ESP [OFF]"
+	btnESP.BackgroundColor3=espOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+	if not espOn then clr() end
+end)
+task.spawn(function()
+	while true do task.wait(1) if espOn then upd() draw() end end
+end)
 
-espBtn.MouseButton1Click:Connect(function()
-	espOn = not espOn
-	espBtn.Text = espOn and "ESP [ON]" or "ESP [OFF]"
-	espBtn.BackgroundColor3 = espOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
-	if not espOn then clearESP() end
+----------------------------------------------------------------
+-- KillAura
+----------------------------------------------------------------
+local kaOn=false
+btnKA.MouseButton1Click:Connect(function()
+	kaOn=not kaOn
+	btnKA.Text=kaOn and "KillAura [ON]" or "KillAura [OFF]"
+	btnKA.BackgroundColor3=kaOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+end)
+local function tgt()
+	local hrp=plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") if not hrp then return nil end
+	local best,d=nil,100
+	for _,p in ipairs(Players:GetPlayers()) do
+		if p~=plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+			local dist=(p.Character.HumanoidRootPart.Position-hrp.Position).Magnitude
+			if dist<d then d,best=dist,p end
+		end
+	end
+	return best
+end
+task.spawn(function()
+	while true do task.wait(0.5)
+		if kaOn then
+			local tar=tgt()
+			if tar and tar.Character and plr.Character then
+				local thrp=tar.Character.HumanoidRootPart
+				local phrp=plr.Character.HumanoidRootPart
+				phrp.CFrame=thrp.CFrame*CFrame.new(0,2,2)
+				VIM:SendMouseButtonEvent(0,0,0,true,game,0)
+				VIM:SendMouseButtonEvent(0,0,0,false,game,0)
+			end
+		end
+	end
+end)
+
+----------------------------------------------------------------
+-- Spam Jump
+----------------------------------------------------------------
+local sj=false
+btnSJ.MouseButton1Click:Connect(function()
+	sj=not sj
+	btnSJ.Text=sj and "Spam Jump [ON]" or "Spam Jump [OFF]"
+	btnSJ.BackgroundColor3=sj and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
+end)
+task.spawn(function()
+	while true do task.wait(0.3)
+		if sj and plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+			plr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+		end
+	end
+end)
+local btnTPM = mk(pFun, "TP to Murderer [OFF]", 90)
+local tpmOn = false
+
+btnTPM.MouseButton1Click:Connect(function()
+	tpmOn = not tpmOn
+	btnTPM.Text = tpmOn and "TP to Murderer [ON]" or "TP to Murderer [OFF]"
+	btnTPM.BackgroundColor3 = tpmOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
 end)
 
 task.spawn(function()
 	while true do
 		task.wait(1)
-		if espOn then
-			updateItemOwners()
-			assignColorsIfMissing()
-			updateESP()
+		if tpmOn and owners.Knife and owners.Knife.Character and plr.Character then
+			local murderer = owners.Knife
+			local tHRP = murderer.Character:FindFirstChild("HumanoidRootPart")
+			local pHRP = plr.Character:FindFirstChild("HumanoidRootPart")
+			if tHRP and pHRP then
+				pHRP.CFrame = tHRP.CFrame * CFrame.new(0, 2, 2)
+			end
 		end
 	end
 end)
+local btnTPS = mk(pFun, "TP to Sheriff [OFF]", 160)
+local tpsOn = false
 
--------------------------------------------------
--- KillAura (0.5 s, тп строго за спину)
--------------------------------------------------
-local auraOn = false
-local KA_DELAY = 0.5       -- задержка между проверками
-
-kAuraBtn.MouseButton1Click:Connect(function()
-    auraOn = not auraOn
-    kAuraBtn.Text = auraOn and "KillAura [ON]" or "KillAura [OFF]"
-    kAuraBtn.BackgroundColor3 = auraOn and Color3.fromRGB(30,130,30)
-                                        or Color3.fromRGB(100,30,30)
+btnTPS.MouseButton1Click:Connect(function()
+	tpsOn = not tpsOn
+	btnTPS.Text = tpsOn and "TP to Sheriff [ON]" or "TP to Sheriff [OFF]"
+	btnTPS.BackgroundColor3 = tpsOn and Color3.fromRGB(30,130,30) or Color3.fromRGB(100,30,30)
 end)
 
-local function getNearest()
-    local me = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
-    if not me then return nil end
-    local best, dist = nil, 100
-    for _,p in ipairs(Players:GetPlayers()) do
-        if p ~= plr and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local d = (p.Character.HumanoidRootPart.Position - me.Position).Magnitude
-            if d < 100 and d < dist then best, dist = p, d end
-        end
-    end
-    return best
-end
-
 task.spawn(function()
-    while true do
-        task.wait(KA_DELAY)
-        if auraOn then
-            local target = getNearest()
-            if target and target.Character and plr.Character
-                and plr.Character:FindFirstChild("HumanoidRootPart") then
-
-                -- CFrame за спину цели (+2 stud вверх)
-                local tHRP = target.Character.HumanoidRootPart
-                local behind = tHRP.CFrame * CFrame.new(0, 2, 2)
-                plr.Character.HumanoidRootPart.CFrame = behind
-
-                -- имитация клика ЛКМ
-                VIM:SendMouseButtonEvent(0,0,0,true, game, 0)
-                VIM:SendMouseButtonEvent(0,0,0,false,game, 0)
-            end
-        end
-    end
+	while true do
+		task.wait(1)
+		if tpsOn and owners.Gun and owners.Gun.Character and plr.Character then
+			local sheriff = owners.Gun
+			local sheriffHRP = sheriff.Character:FindFirstChild("HumanoidRootPart")
+			local myHRP = plr.Character:FindFirstChild("HumanoidRootPart")
+			if sheriffHRP and myHRP then
+				myHRP.CFrame = sheriffHRP.CFrame * CFrame.new(0, 2, 2)
+			end
+		end
+	end
 end)
